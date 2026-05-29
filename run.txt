@@ -1,0 +1,20 @@
+# 1. Compile vulnerable binary
+gcc -fno-stack-protector -z execstack -no-pie -o vuln vuln.c
+
+# 2. Disable ASLR (for simpler exploitation)
+echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+
+# 3. Find offset with GDB
+gdb -q ./vuln
+> run AAAABBBBCCCCDDDD...
+> # check RSP when it crashes
+> info registers rsp
+> x/gx $rsp
+> quit
+
+# 4. Update buffer_addr in exploit.c
+
+# 5. Run exploit
+./exploit | xargs -0 ./vuln
+# OR
+python3 exploit.py && ./vuln "$(cat payload.bin)"
